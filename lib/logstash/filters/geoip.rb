@@ -158,6 +158,9 @@ class LogStash::Filters::GeoIP < LogStash::Filters::Base
       result = get_geo_data_for_ip(ip)
     rescue SocketError => e
       @logger.error("IP Field contained invalid IP address or hostname", :field => @source, :event => event)
+    rescue IOError => e
+      Thread.current[threadkey] = nil
+      @logger.error("An IO error occured while accessing the GeoIP database, GeoIP database will be re-opened", :exception => e, :field => @source, :event => event)
     rescue StandardError => e
       @logger.error("Unknown error while looking up GeoIP data", :exception => e, :field => @source, :event => event)
     end
